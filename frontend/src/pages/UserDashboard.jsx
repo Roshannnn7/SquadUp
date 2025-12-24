@@ -19,12 +19,9 @@ const UserDashboard = () => {
                 const bookingsRes = await bookingAPI.getUserBookings();
                 setBookings(bookingsRes.data.data);
 
-                // Fetch real projects and filter (simplified for now)
-                const projectsRes = await projectAPI.getAll();
-                const userProjects = projectsRes.data.data.filter(p =>
-                    p.members.some(m => m._id === userProfile?._id || m === userProfile?._id)
-                );
-                setMyProjects(userProjects);
+                // Fetch only projects where user is a member/owner
+                const projectsRes = await projectAPI.getAll({ member: 'true' });
+                setMyProjects(projectsRes.data.data);
 
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);

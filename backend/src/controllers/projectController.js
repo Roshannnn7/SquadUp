@@ -6,7 +6,16 @@ import Project from '../models/Project.js';
  */
 export const getAllProjects = async (req, res) => {
     try {
-        const projects = await Project.find()
+        const { owner, member } = req.query;
+        let query = {};
+
+        if (owner === 'true') {
+            query.owner = req.user._id;
+        } else if (member === 'true') {
+            query.members = req.user._id;
+        }
+
+        const projects = await Project.find(query)
             .populate('owner', 'displayName photoURL')
             .populate('members', 'displayName photoURL')
             .sort({ createdAt: -1 });

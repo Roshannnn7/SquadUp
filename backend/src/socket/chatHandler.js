@@ -97,6 +97,62 @@ export const initializeChatSocket = (io) => {
         });
 
         /**
+         * Call signaling
+         */
+        socket.on('call:request', (data) => {
+            const { receiverId, callerName, type } = data; // type: 'video' | 'audio'
+            const receiverSocketId = connectedUsers.get(receiverId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('call:incoming', {
+                    callerId: socket.userId,
+                    callerName,
+                    type,
+                    signal: data.signal
+                });
+            }
+        });
+
+        socket.on('call:accepted', (data) => {
+            const { callerId, signal } = data;
+            const callerSocketId = connectedUsers.get(callerId);
+            if (callerSocketId) {
+                io.to(callerSocketId).emit('call:accepted', {
+                    receiverId: socket.userId,
+                    signal
+                });
+            }
+        });
+
+        socket.on('call:rejected', (data) => {
+            const { callerId } = data;
+            const callerSocketId = connectedUsers.get(callerId);
+            if (callerSocketId) {
+                io.to(callerSocketId).emit('call:rejected', {
+                    receiverId: socket.userId
+                });
+            }
+        });
+
+        socket.on('call:signaling', (data) => {
+            const { to, signal } = data;
+            const targetSocketId = connectedUsers.get(to);
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('call:signaling', {
+                    from: socket.userId,
+                    signal
+                });
+            }
+        });
+
+        socket.on('call:end', (data) => {
+            const { to } = data;
+            const targetSocketId = connectedUsers.get(to);
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('call:ended');
+            }
+        });
+
+        /**
          * User disconnects
          */
         socket.on('disconnect', () => {
@@ -104,6 +160,10 @@ export const initializeChatSocket = (io) => {
                 connectedUsers.delete(socket.userId);
                 // Notify others user is offline
                 socket.broadcast.emit('user:offline', socket.userId);
+
+                // End any active calls (simplified)
+                socket.broadcast.emit('call:ended', { userId: socket.userId });
+
                 console.log(`👋 User ${socket.userId} disconnected`);
             }
             console.log(`❌ Socket disconnected: ${socket.id}`);

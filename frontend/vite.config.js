@@ -12,4 +12,8 @@ export default defineConfig({
         outDir: 'dist',
         sourcemap: false,
     },
+    define: {
+        global: 'window',
+        'process.env': {},
+    }
 })

@@ -11,15 +11,18 @@ const ProjectsPage = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [filter, setFilter] = useState('all'); // 'all' or 'my'
     const { currentUser } = useAuth();
 
     useEffect(() => {
         fetchProjects();
-    }, []);
+    }, [filter]);
 
     const fetchProjects = async () => {
         try {
-            const { data } = await projectAPI.getAll();
+            setLoading(true);
+            const params = filter === 'my' ? { member: 'true' } : {};
+            const { data } = await projectAPI.getAll(params);
             setProjects(data.data);
         } catch (error) {
             console.error('Error fetching projects:', error);
@@ -76,6 +79,28 @@ const ProjectsPage = () => {
                                 Create Project
                             </button>
                         )}
+                    </div>
+
+                    {/* Filter Buttons */}
+                    <div className="flex items-center space-x-4 mb-8">
+                        <button
+                            onClick={() => setFilter('all')}
+                            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'all'
+                                    ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-lg'
+                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                }`}
+                        >
+                            All Projects
+                        </button>
+                        <button
+                            onClick={() => setFilter('my')}
+                            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'my'
+                                    ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-lg'
+                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                }`}
+                        >
+                            My Projects
+                        </button>
                     </div>
 
                     {loading ? (

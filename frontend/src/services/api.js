@@ -73,7 +73,7 @@ export const messageAPI = {
 };
 
 export const projectAPI = {
-    getAll: () => api.get('/projects'),
+    getAll: (params) => api.get('/projects', { params }),
     create: (data) => api.post('/projects', data),
     join: (id) => api.put(`/projects/${id}/join`),
 };

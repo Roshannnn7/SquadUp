@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, MessageCircle, Minimize2, Video } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCall } from '../context/CallContext';
 import socketService from '../services/socket';
 import { messageAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -13,14 +14,11 @@ const ChatWidget = ({ expertId, expertName }) => {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
 
-    const handleVideoCall = () => {
-        // Generate a unique meeting ID based on sorted user IDs to ensure consistency
-        const participants = [currentUser.uid, expertId].sort();
-        const meetingId = `SquadUp-${participants.join('-')}`;
-        const meetingUrl = `https://meet.jit.si/${meetingId}`;
+    const { startCall } = useCall();
 
-        window.open(meetingUrl, '_blank');
-        toast.success('Starting video call... 🎥');
+    const handleVideoCall = () => {
+        startCall(expertId, expertName);
+        toast.success(`Calling ${expertName}... 🎥`);
     };
 
     const scrollToBottom = () => {
